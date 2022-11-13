@@ -16,7 +16,7 @@ namespace BanGiay.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly BanGiayContext _context;
-
+        public static int PAGE_SIZE { get; set; } = 5;
         public ProductsController(BanGiayContext context)
         {
             _context = context;
@@ -24,29 +24,53 @@ namespace BanGiay.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetALLProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetALLProducts(string ?search, double? from, double? to, string ?sort,int page)
         {
-            var result = (
-                from b in _context.Products
-              
+            var result = _context.Products.AsQueryable();
 
-                 select new
+            if (!String.IsNullOrEmpty(search))
+            {
+                result = result.Where(x => x.Name.Contains(search)
+
+               );
+            }
+            if (from.HasValue)
+            {
+                result = result.Where(x => x.Price >= from);
+            }
+            if (to.HasValue)
+            {
+                result = result.Where(x => x.Price <= from);
+            }
+            if (!String.IsNullOrEmpty(sort))
+            {
+                switch (sort)
                 {
-                    Id = b.Id,
-                    name = b.Name,
-               
-                    Description=b.Description,
-                    Content = b.Content,
-                    Image=b.Image,
-                    Gallery=b.Gallery,
-                    Price=  b.Price,
-                    PriceSale=b.PriceSale,
-                    Created = b.Created ,
-                    Updated = b.Updated ,
-
+                    case "price_desc":
+                        result = result.OrderByDescending(x => x.Price);
+                        break;
+                    case "price_asc":
+                        result = result.OrderBy(x => x.Price);
+                        break;
+                    default:
+                        result = result.OrderBy(x => x.Name);
+                        break;
                 }
-                );
-            return  Ok( result);
+            }
+            if (page <= 0)
+            {
+                page = 1;
+                return Ok(result);
+            }
+            else
+            {
+               var  result2 = PaginatedList<Product>.Create(result, page, PAGE_SIZE);
+                return Ok(result2);
+            }
+            
+            
+          
+         
         }
 
         // GET: api/Products/5

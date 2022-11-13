@@ -14,6 +14,7 @@ namespace BanGiay.Models
         public string Gallery { get; set; }
         public string Content { get; set; }
         public string Description { get; set; }
+        public bool isStatus { get; set; }
         public DateTime? Created { get; set; }
         public DateTime? Updated { get; set; }
     }
