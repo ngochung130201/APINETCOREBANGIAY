@@ -17,6 +17,7 @@ namespace BanGiay.Controllers
     {
         private readonly BanGiayContext _context;
         public static int PAGE_SIZE { get; set; } = 5;
+        public static int TotalPage { get; set; } = 1;
         public ProductsController(BanGiayContext context)
         {
             _context = context;
@@ -64,12 +65,12 @@ namespace BanGiay.Controllers
             }
             else
             {
-               var  result2 = PaginatedList<Product>.Create(result, page, PAGE_SIZE);
-                return Ok(result2);
+                var result2 = PaginatedList<Product>.Create(result, page, PAGE_SIZE);
+
+                return Ok(new { result2, result2.TotalPage,PAGE_SIZE ,result2.PageIndex});
+
+
             }
-            
-            
-          
          
         }
 
