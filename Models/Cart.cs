@@ -8,12 +8,14 @@ namespace BanGiay.Models
     {
         [Key]
         public Guid Id { get; set; }
+        public Guid CartID { get; set; }
         public string Name { get; set; }
         public string Image { get; set; }
         [Range(0, double.MaxValue)]
-        public string Price { get; set; }
+        public double Price { get; set; }
         [Range(0, double.MaxValue)]
-        public string PriceSale { get; set; }
+        public double PriceSale { get; set; }
+        public int Amount { get; set; } 
         public DateTime? NgayDatHang { get; set; }
     }
 }

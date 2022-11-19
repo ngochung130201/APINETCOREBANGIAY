@@ -25,7 +25,7 @@ namespace BanGiay.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cart>>> GetCarts()
         {
-            return await _context.Carts.ToListAsync();
+            return await _context.Carts.OrderByDescending(x =>x.NgayDatHang).ToListAsync();
         }
 
         // GET: api/Carts/5
@@ -44,44 +44,29 @@ namespace BanGiay.Controllers
 
         // PUT: api/Carts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCart(Guid id, Cart cart)
-        {
-            if (id != cart.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(cart).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CartExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
+    
 
         // POST: api/Carts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Cart>> PostCart(Cart cart)
         {
-            _context.Carts.Add(cart);
-            await _context.SaveChangesAsync();
+            var cartNew =  new Cart
+            {
+                Id = Guid.NewGuid(),
+                CartID = cart.CartID,
+                Amount = cart.Amount,
+                Name =  cart.Name,
+                Image = cart.Image,
+                Price = cart.Price,
+                PriceSale = cart.PriceSale,
+                NgayDatHang = DateTime.Now,
 
-            return CreatedAtAction("GetCart", new { id = cart.Id }, cart);
+            };
+            await _context.Carts.AddAsync(cartNew);
+            await _context.SaveChangesAsync();
+            return Ok(cartNew);
+
         }
 
         // DELETE: api/Carts/5

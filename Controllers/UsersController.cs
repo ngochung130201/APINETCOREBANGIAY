@@ -2,6 +2,7 @@
 using BanGiay.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -31,14 +32,16 @@ namespace BanGiay.Controllers
             user.UserName = request.UserName;
             user.PasswordSalt = passwordSalt;
             user.PasswordHast = passwordHash;
-           await  _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+           //await  _context.Users.AddAsync(user);
+           // await _context.SaveChangesAsync();
             return Ok(user);
 
         }
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
+            //var userDb = _context.Users.Where(x => x.UserName == request.UserName);
+            
             if(user.UserName != request.UserName)
             {
                 return BadRequest("Khong co ten nguoi dung nay !");
@@ -48,7 +51,52 @@ namespace BanGiay.Controllers
                 return BadRequest("Mat khau sau");
             }
             string token =  CreateToken(user);
-            return Ok(token);
+            return Ok(new {token,user.UserName});
+        }
+        [HttpGet("IndexUser")]
+        public async Task<ActionResult> GetUserAll()
+        {
+            var userAll = await _context.Users.ToListAsync();
+            return Ok(userAll);
+        }
+        [HttpDelete("id")]
+        public async Task<ActionResult> DeleUser(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            var userAll = await _context.Users.ToListAsync();
+            if (user == null)
+            {
+               return NotFound();
+            }
+            else
+            {
+                 _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+                return Ok(userAll);
+
+            }
+        }
+        [HttpPut("id")]
+        public async Task<ActionResult> EditUser(Guid id,UserDto userDto)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                user.UserName = userDto.UserName;
+                user.PasswordHast = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                 _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                return NoContent();
+
+
+            }
+
         }
         private string CreateToken(User user)
         {
@@ -82,5 +130,6 @@ namespace BanGiay.Controllers
             }
         
         }
+    
     }
 }
